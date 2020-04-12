@@ -23,6 +23,7 @@ metadata {
 		capability "Motion Sensor"
 		capability "Presence Sensor"
 		capability "Refresh"
+		capability "Switch"
 		capability "Temperature Measurement"
 		capability "Thermostat Mode"
 		capability "Thermostat Setpoint"
@@ -169,6 +170,7 @@ private processData(data) {
 		sendEvent(name: "motion", value: data.motion)
 		sendEvent(name: "speed", value: data.speed, unit: "mph")
 		sendEvent(name: "vin", value: data.vin)
+		sendEvent(name: "switch", value: data.state == "asleep" ? "off" : "on")
 		sendEvent(name: "thermostatMode", value: data.thermostatMode)
 
 		if (data.chargeState) {
@@ -210,7 +212,7 @@ def wake() {
 	log.debug "Executing 'wake'"
 	def data = parent.wake(this)
 	processData(data)
-	runIn(30, refresh)
+	runIn(10, refresh)
 }
 
 def lock() {
@@ -231,6 +233,12 @@ def auto() {
 	if (result) { refresh() }
 }
 
+// Wake
+def on() {
+	wake()
+}
+
+// Thermostat
 def off() {
 	log.debug "Executing 'off'"
 	def result = parent.climateOff(this)
